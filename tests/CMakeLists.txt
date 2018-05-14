@@ -1,0 +1,14 @@
+add_subdirectory(catch)
+
+add_executable(
+    tests
+        main.cpp
+        tcp_socket_tests.cpp
+)
+
+target_link_libraries(
+    tests
+    PRIVATE
+        Net::net
+        Catch2::Catch
+)
