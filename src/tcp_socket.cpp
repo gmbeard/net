@@ -4,10 +4,42 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 using namespace net;
 
 constexpr int INVALID_SOCKET_VALUE = -1;
+
+#define CHECK_FCNTL_RESULT(f) \
+do { \
+    if (0 > f) { \
+        return ::result::err(::std::error_code { \
+            errno, \
+            ::std::system_category() \
+        }); \
+    } \
+} while (0)
+
+#define CHECK_SOCKET_RESULT(e) \
+do { \
+    if (e) { \
+        return ::result::err(::std::error_code { \
+            errno, \
+            ::std::system_category() \
+        }); \
+    } \
+} while (0)
+
+#define CHECK_HANDLE_RESULT(e) CHECK_FCNTL_RESULT(e)
+#define CHECK_IO_RESULT(e) CHECK_FCNTL_RESULT(e)
+
+_private::OsHandle::OsHandle(int h) noexcept :
+    handle_{h}
+{ }
+
+auto _private::OsHandle::operator*() const noexcept -> int {
+    return handle_;
+}
 
 TcpSocket::TcpSocket() :
     handle_{::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)}
@@ -18,6 +50,10 @@ TcpSocket::TcpSocket() :
         };
     }
 }
+
+TcpSocket::TcpSocket(_private::OsHandle h) noexcept :
+    handle_{*h}
+{ }
 
 TcpSocket::~TcpSocket() {
     ::close(handle_);
@@ -49,22 +85,61 @@ auto TcpSocket::bind(ip::IPv4 addr,
     auto e = ::bind(handle_, 
                     reinterpret_cast<sockaddr*>(&a),
                     sizeof(a));
-    if (e) {
-        return result::err(std::error_code{errno, std::system_category()});
-    }
 
+    CHECK_SOCKET_RESULT(e);
     return result::ok();
 }
 
 auto TcpSocket::listen() noexcept -> SocketResult<void> {
-    return result::err(
-        std::make_error_code(std::errc::network_unreachable));
+    auto e = ::listen(handle_,
+                      SOMAXCONN);
+    CHECK_SOCKET_RESULT(e);
+    return result::ok();
 }
 
 auto TcpSocket::set_nonblocking(bool flag) noexcept 
     -> SocketResult<void>
 {
-    (void)flag;
-    return result::err(
-        std::make_error_code(std::errc::network_unreachable));
+    auto f = ::fcntl(handle_, F_GETFL);
+    CHECK_FCNTL_RESULT(f);
+
+    if (flag) {
+        f |= O_NONBLOCK;
+    }
+    else {
+        f &= ~O_NONBLOCK;
+    }
+
+    f = ::fcntl(handle_, F_SETFL, f);
+    CHECK_FCNTL_RESULT(f);
+
+    return result::ok();
 }
+
+auto TcpSocket::accept() noexcept -> SocketResult<TcpSocket> {
+
+    auto incoming = ::accept(handle_, 
+                             nullptr, 
+                             nullptr);
+    CHECK_HANDLE_RESULT(incoming);
+    return result::ok(_private::OsHandle { incoming });
+}
+
+auto TcpSocket::read_(uint8_t* buffer, size_t len) noexcept
+    -> SocketResult<size_t>
+{
+    auto n = ::read(handle_, buffer, len);
+    CHECK_IO_RESULT(n);
+
+    return result::ok(static_cast<size_t>(n));
+}
+
+auto TcpSocket::write_(uint8_t const* buffer, size_t len) noexcept
+            -> SocketResult<size_t>
+{
+    auto n = ::write(handle_, buffer, len);
+    CHECK_IO_RESULT(n);
+
+    return result::ok(static_cast<size_t>(n));
+}
+
