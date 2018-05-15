@@ -19,6 +19,7 @@ do { \
 using namespace net;
 
 TcpListener::TcpListener(ip::IPv4 addr, uint16_t port) {
+    TRY_EXCEPT(socket_.set_reuseaddr(true));
     TRY_EXCEPT(socket_.bind(addr, port));
     TRY_EXCEPT(socket_.listen());
 }

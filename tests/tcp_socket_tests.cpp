@@ -3,13 +3,17 @@
 #include <string>
 #include <vector>
 #include <forward_list>
+#include <atomic>
+#include <thread>
+#include <functional>
 
 using namespace std::literals;
 
 TEST_CASE("TCP Sockets", "[net]") {
 
     SECTION("TcpSocket should bind") {
-        auto s = net::TcpSocket{};
+        auto s = net::TcpSocket { };
+        REQUIRE(s.set_reuseaddr(true).is_ok());
         auto e = s.bind(ip::IPv4::from_string("127.0.0.1"), 
                         5050);
 
@@ -22,7 +26,8 @@ TEST_CASE("TCP Sockets", "[net]") {
 
     SECTION("TcpSocket should listen") {
 
-        auto s = net::TcpSocket{};
+        auto s = net::TcpSocket { };
+        REQUIRE(s.set_reuseaddr(true).is_ok());
         auto e = s.bind(ip::IPv4::from_string("127.0.0.1"), 
                         5050);
 
@@ -51,31 +56,74 @@ TEST_CASE("TCP Sockets", "[net]") {
 
 // TODO(GB):
 //  Make this test automated
-TEST_CASE("Connection tests", "[.net]") {
+TEST_CASE("Connection tests", "[net]") {
 
     SECTION("TcpSocket should accept a socket") {
 
-        auto s = net::TcpSocket{};
-        auto e = s.bind(ip::IPv4::from_string("127.0.0.1"), 
-                        5050);
+        std::atomic<bool> flag { false };
+        net::SocketResult<void> r = result::ok();
+        auto addr = ip::IPv4::from_string("127.0.0.1");
+        uint16_t port = 5050;
+        auto t = std::thread(
+            [](net::SocketResult<void>& f,
+                   std::atomic<bool>& flag,
+                   ip::IPv4 addr,
+                   uint16_t port)
+            {
+                auto s = net::TcpSocket { };
+                auto reuse = s.set_reuseaddr(true);
+                if (!reuse.is_ok()) {
+                    f = result::err(reuse.error());
+                    return;
+                }
 
-        REQUIRE(e.is_ok());
-        e = s.listen();
-        REQUIRE(e.is_ok());
+                auto e = s.bind(addr, port);
 
-        auto incoming = s.accept();
+                if (!e.is_ok()) {
+                    f = result::err(e.error());
+                    return;
+                }
+
+                e = s.listen();
+                if (!e.is_ok()) {
+                    f = result::err(e.error());
+                    return;
+                }
+
+                auto incoming = s.accept();
+                if (!incoming.is_ok()) {
+                    f = result::err(e.error());
+                }
+
+                flag = true;
+            },
+            std::ref(r),
+            std::ref(flag),
+            addr,
+            port);
+
+        net::TcpSocket s { };
+        auto e = s.connect(addr, port);
+        t.join();
 
         REQUIRE_NOTHROW([&] {
-            if (!incoming.is_ok()) {
-                throw std::system_error{e.error()};
+            if (!r.is_ok()) {
+                throw std::system_error { r.error() };
             }
         }());
+
+        REQUIRE_NOTHROW([&] {
+            if (!e.is_ok()) {
+                throw std::system_error { e.error() };
+            }
+        }());
+        REQUIRE(flag);
     }
 }
 
 // TODO(GB):
 //  Make this test automated
-TEST_CASE("Socket IO", "[.net]") {
+TEST_CASE("Socket IO", "[net]") {
 
     SECTION("Should obey ContiguousBytes") {
         using Valid = std::vector<uint8_t>;
@@ -83,11 +131,5 @@ TEST_CASE("Socket IO", "[.net]") {
 
         REQUIRE(net::ContiguousBytes<Valid>);
         REQUIRE(!net::ContiguousBytes<Invalid>);
-
-        Valid v(128);
-
-        auto s = net::TcpSocket{};
-        REQUIRE(s.read(v).is_ok());
-        REQUIRE(s.write(v).is_ok());
     }
 }

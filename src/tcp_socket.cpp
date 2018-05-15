@@ -110,6 +110,21 @@ auto TcpSocket::bind(ip::IPv4 addr,
     return result::ok();
 }
 
+auto TcpSocket::connect(ip::IPv4 addr,
+                        uint16_t port) noexcept -> SocketResult<void>
+{    
+    sockaddr_in a = {};
+    a.sin_addr.s_addr = htonl(static_cast<uint32_t>(addr));
+    a.sin_port = htons(port);
+
+    auto e = ::connect(handle_, 
+                       reinterpret_cast<sockaddr*>(&a),
+                       sizeof(a));
+
+    CHECK_SOCKET_RESULT(e);
+    return result::ok();
+}
+
 auto TcpSocket::listen() noexcept -> SocketResult<void> {
     auto e = ::listen(handle_, SOMAXCONN);
     CHECK_SOCKET_RESULT(e);
@@ -130,6 +145,17 @@ auto TcpSocket::set_nonblocking(bool flag) noexcept -> SocketResult<void> {
     f = ::fcntl(handle_, F_SETFL, f);
     CHECK_FCNTL_RESULT(f);
 
+    return result::ok();
+}
+
+auto TcpSocket::set_reuseaddr(bool flag) noexcept -> SocketResult<void> {
+    int val = flag ? 1 : 0;
+    auto e = ::setsockopt(handle_,
+                          SOL_SOCKET,
+                          SO_REUSEADDR,
+                          &val,
+                          sizeof(val));
+    CHECK_SOCKET_RESULT(e);
     return result::ok();
 }
 

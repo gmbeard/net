@@ -28,7 +28,11 @@ namespace net {
     using SocketResult = 
         result::Result<T, std::error_code>;
 
+    struct TcpListener;
+
     struct TcpSocket {
+
+        friend struct TcpListener;
 
         TcpSocket();
         TcpSocket(_private::OsHandle) noexcept;
@@ -38,8 +42,11 @@ namespace net {
         auto operator=(TcpSocket&&) noexcept -> TcpSocket&;
         auto operator=(TcpSocket const&) -> TcpSocket& = delete;
         auto bind(ip::IPv4 addr, uint16_t port) noexcept -> SocketResult<void>;
+        auto connect(ip::IPv4 addr, uint16_t port) noexcept
+            -> SocketResult<void>;
         auto listen() noexcept -> SocketResult<void>;
         auto set_nonblocking(bool) noexcept -> SocketResult<void>;
+        auto set_reuseaddr(bool) noexcept -> SocketResult<void>;
         auto accept() noexcept -> SocketResult<TcpSocket>;
 
         template<
