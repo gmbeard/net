@@ -37,11 +37,9 @@ namespace net {
         ~TcpSocket();
         auto operator=(TcpSocket&&) noexcept -> TcpSocket&;
         auto operator=(TcpSocket const&) -> TcpSocket& = delete;
-        auto bind(ip::IPv4 addr, uint16_t port) noexcept ->
-            SocketResult<void>;
+        auto bind(ip::IPv4 addr, uint16_t port) noexcept -> SocketResult<void>;
         auto listen() noexcept -> SocketResult<void>;
-        auto set_nonblocking(bool) noexcept 
-            -> SocketResult<void>;
+        auto set_nonblocking(bool) noexcept -> SocketResult<void>;
         auto accept() noexcept -> SocketResult<TcpSocket>;
 
         template<
@@ -61,11 +59,8 @@ namespace net {
         }
 
     private:
-        auto read_(uint8_t*, size_t) noexcept
-            -> SocketResult<size_t>;
-
-        auto write_(uint8_t const*, size_t) noexcept
-            -> SocketResult<size_t>;
+        auto read_(uint8_t*, size_t) noexcept -> SocketResult<size_t>;
+        auto write_(uint8_t const*, size_t) noexcept -> SocketResult<size_t>;
 
         int handle_;
     };

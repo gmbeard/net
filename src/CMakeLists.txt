@@ -2,6 +2,8 @@ add_library(
     net
     STATIC
         tcp_socket.cpp
+        tcp_stream.cpp
+        tcp_listener.cpp
 )
 
 target_link_libraries(

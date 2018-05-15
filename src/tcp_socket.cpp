@@ -20,6 +20,20 @@ do { \
     } \
 } while (0)
 
+#define THROWS_FCNTL_RESULT(f) \
+do { \
+    if (0 > (f)) { \
+        throw ::std::system_error { \
+            ::std::error_code { \
+                errno, \
+                ::std::system_category() \
+            } \
+        }; \
+    } \
+} while (0)
+
+#define THROWS_HANDLE_RESULT(e) THROWS_FCNTL_RESULT(e)
+
 #define CHECK_SOCKET_RESULT(e) \
 do { \
     if (e) { \
@@ -33,6 +47,13 @@ do { \
 #define CHECK_HANDLE_RESULT(e) CHECK_FCNTL_RESULT(e)
 #define CHECK_IO_RESULT(e) CHECK_FCNTL_RESULT(e)
 
+auto set_cloexec(int handle) {
+    auto f = ::fcntl(handle, F_GETFD);
+    THROWS_FCNTL_RESULT(f);
+    f |= FD_CLOEXEC;
+    THROWS_FCNTL_RESULT(::fcntl(handle, F_SETFD, f));
+}
+
 _private::OsHandle::OsHandle(int h) noexcept :
     handle_{h}
 { }
@@ -44,16 +65,15 @@ auto _private::OsHandle::operator*() const noexcept -> int {
 TcpSocket::TcpSocket() :
     handle_{::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)}
 {
-    if (handle_ == INVALID_SOCKET_VALUE) {
-        throw std::system_error {
-            std::error_code { errno, std::system_category() }
-        };
-    }
+    THROWS_HANDLE_RESULT(handle_);
+    set_cloexec(handle_);
 }
 
 TcpSocket::TcpSocket(_private::OsHandle h) noexcept :
     handle_{*h}
-{ }
+{ 
+    set_cloexec(handle_);
+}
 
 TcpSocket::~TcpSocket() {
     ::close(handle_);
@@ -91,15 +111,12 @@ auto TcpSocket::bind(ip::IPv4 addr,
 }
 
 auto TcpSocket::listen() noexcept -> SocketResult<void> {
-    auto e = ::listen(handle_,
-                      SOMAXCONN);
+    auto e = ::listen(handle_, SOMAXCONN);
     CHECK_SOCKET_RESULT(e);
     return result::ok();
 }
 
-auto TcpSocket::set_nonblocking(bool flag) noexcept 
-    -> SocketResult<void>
-{
+auto TcpSocket::set_nonblocking(bool flag) noexcept -> SocketResult<void> {
     auto f = ::fcntl(handle_, F_GETFL);
     CHECK_FCNTL_RESULT(f);
 
@@ -117,10 +134,7 @@ auto TcpSocket::set_nonblocking(bool flag) noexcept
 }
 
 auto TcpSocket::accept() noexcept -> SocketResult<TcpSocket> {
-
-    auto incoming = ::accept(handle_, 
-                             nullptr, 
-                             nullptr);
+    auto incoming = ::accept(handle_, nullptr, nullptr);
     CHECK_HANDLE_RESULT(incoming);
     return result::ok(_private::OsHandle { incoming });
 }
@@ -130,7 +144,6 @@ auto TcpSocket::read_(uint8_t* buffer, size_t len) noexcept
 {
     auto n = ::read(handle_, buffer, len);
     CHECK_IO_RESULT(n);
-
     return result::ok(static_cast<size_t>(n));
 }
 
@@ -139,7 +152,6 @@ auto TcpSocket::write_(uint8_t const* buffer, size_t len) noexcept
 {
     auto n = ::write(handle_, buffer, len);
     CHECK_IO_RESULT(n);
-
     return result::ok(static_cast<size_t>(n));
 }
 
