@@ -42,15 +42,16 @@ auto net::sys::set_cloexec(SocketHandle handle) noexcept
     -> SocketResult<void>
 {    
     auto f = ::fcntl(handle, F_GETFD);
-    THROWS_FCNTL_RESULT(f);
+    CHECK_FCNTL_RESULT(f);
     f |= FD_CLOEXEC;
-    THROWS_FCNTL_RESULT(::fcntl(handle, F_SETFD, f));
+    CHECK_FCNTL_RESULT(::fcntl(handle, F_SETFD, f));
+    return result::ok();
 }
 
 auto net::sys::create_tcp_socket() noexcept 
     -> SocketResult<SocketHandle>
 {
-    auto h = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)}
+    auto h = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     CHECK_HANDLE_RESULT(h);
     return result::ok(h);
 }

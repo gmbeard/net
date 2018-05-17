@@ -3,6 +3,7 @@
 
 #include "ip/ipv4.hpp"
 #include "result/result.hpp"
+#include <system_error>
 
 #ifdef _WIN32
 # include <winsock2.h>
