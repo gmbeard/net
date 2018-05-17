@@ -12,3 +12,10 @@ target_link_libraries(
         Net::net
         Catch2::Catch
 )
+
+add_test(
+    NAME
+        netTests
+    COMMAND
+        tests -s
+)

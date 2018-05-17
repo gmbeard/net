@@ -1,3 +1,6 @@
+find_package(Ip REQUIRED)
+find_package(Result REQUIRED)
+
 set(net_sources
     tcp_socket.cpp
     tcp_stream.cpp
