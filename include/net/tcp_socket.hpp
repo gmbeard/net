@@ -1,6 +1,7 @@
 #ifndef NET_TCP_SOCKET_HPP_INCLUDED
 #define NET_TCP_SOCKET_HPP_INCLUDED
 
+#include "net/sys/tcp_socket.hpp"
 #include "net/detail/tests.hpp"
 #include "ip/ipv4.hpp"
 #include "result/result.hpp"
@@ -10,23 +11,22 @@
 
 namespace net {
 
-    namespace _private {
-        struct OsHandle {
-            explicit OsHandle(int) noexcept;
-            auto operator*() const noexcept -> int;
-        private:
-            int handle_;
-        };
-    }
+    template<typename T>
+    using SocketResult = sys::SocketResult<T>;
 
     template<typename T>
     constexpr bool ContiguousBytes = 
-        _tests::NonNarrowConversionToByte<T>::value and
+        _tests::NonNarrowConversionToByte<T>::value &&
         _tests::RandomAccessIterator<T>::value;
 
-    template<typename T>
-    using SocketResult = 
-        result::Result<T, std::error_code>;
+    namespace _private {
+        struct OsHandle {
+            explicit OsHandle(sys::SocketHandle) noexcept;
+            auto operator*() const noexcept -> sys::SocketHandle;
+        private:
+            sys::SocketHandle handle_;
+        };
+    }
 
     struct TcpListener;
 
@@ -69,7 +69,7 @@ namespace net {
         auto read_(uint8_t*, size_t) noexcept -> SocketResult<size_t>;
         auto write_(uint8_t const*, size_t) noexcept -> SocketResult<size_t>;
 
-        int handle_;
+        sys::SocketHandle handle_;
     };
 }
 #endif //NET_TCP_SOCKET_HPP_INCLUDED

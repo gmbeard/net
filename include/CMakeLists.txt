@@ -25,6 +25,10 @@ target_compile_options(
     INTERFACE
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror -Wextra>
         $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+        # TODO(GB): Result contains a throw in a (possibly)
+        #   noexcept function. Sort this MSVC compiler warning!
+        #   Issue #: https://github.com/gmbeard/result/issues/1
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4297>
         $<TARGET_PROPERTY:Ip::headers,INTERFACE_COMPILE_OPTIONS>
         $<TARGET_PROPERTY:Result::result,INTERFACE_COMPILE_OPTIONS>
 )
