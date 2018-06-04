@@ -41,3 +41,17 @@ if(NET_ENABLE_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+install(
+    EXPORT NetExports
+    NAMESPACE Net::
+    FILE NetTargets.cmake
+    DESTINATION lib/cmake/net
+)
+
+install(
+    FILES
+        cmake/NetConfig.cmake
+    DESTINATION
+        lib/cmake/net
+)

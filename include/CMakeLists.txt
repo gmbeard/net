@@ -39,8 +39,9 @@ install(
 )
 
 install(
-    TARGETS includes
-    EXPORT NetIncludesTarget
+    TARGETS 
+        includes
+    EXPORT NetExports
 )
 
 add_library(

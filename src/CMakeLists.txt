@@ -47,3 +47,10 @@ add_library(
     ALIAS 
     net
 )
+
+install(
+    TARGETS
+        net
+    EXPORT NetExports
+    ARCHIVE DESTINATION lib
+)
