@@ -1,9 +1,3 @@
-[submodule "submodules/ip"]
-	path = submodules/ip
-	url = https://github.com/gmbeard/ip.git
-[submodule "submodules/result"]
-	path = submodules/result
-	url = https://github.com/gmbeard/result.git
-[submodule "tests/catch"]
-	path = tests/catch
-	url = https://github.com/CatchOrg/Catch2.git
+[submodule ".\\submodules\\cmake"]
+	path = .\\submodules\\cmake
+	url = https://github.com/gmbeard/cmake-modules.git

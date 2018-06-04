@@ -1,20 +1,32 @@
 cmake_minimum_required(VERSION 3.7)
 
-set(CMAKE_MODULE_PATH 
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+list(APPEND
+    CMAKE_MODULE_PATH 
+    ${CMAKE_CURRENT_LIST_DIR}/cmake
+)
+
+list(APPEND
+    CMAKE_MODULE_PATH
+    ${CMAKE_CURRENT_LIST_DIR}/submodules/cmake
+)
+
+list(APPEND
+    CMAKE_PREFIX_PATH
+    ${CMAKE_CURRENT_LIST_DIR}/deps
 )
 
 include(FindPackageDelegate)
+include(InstallExternals)
 
 project(Net CXX)
 
-set(LOCAL_TARGETS
-    Ip
-    Result
-)
+#set(LOCAL_TARGETS
+#    Ip
+#    Result
+#)
 
-add_subdirectory(submodules/ip)
-add_subdirectory(submodules/result)
+#add_subdirectory(submodules/ip)
+#add_subdirectory(submodules/result)
 add_subdirectory(include)
 add_subdirectory(src)
 
