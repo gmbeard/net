@@ -14,10 +14,36 @@ namespace net {
     template<typename T>
     using SocketResult = sys::SocketResult<T>;
 
-    template<typename T>
-    constexpr bool ContiguousBytes = 
-        _tests::NonNarrowConversionToByte<T>::value &&
-        _tests::RandomAccessIterator<T>::value;
+    namespace cncpts {
+        using namespace _tests;
+
+        template<typename T>
+        using IteratorCategory = 
+            typename std::iterator_traits<T>::iterator_category;
+
+        template<typename T>
+        using IteratorValueType = 
+            typename std::iterator_traits<T>::value_type;
+
+        template<typename From, typename To>
+        using NoNarrowConversionTo = 
+            decltype(To { std::declval<From>() });
+
+        template<typename T>
+        constexpr bool ContiguousByteIterator =
+            RequireAll<
+                DetectedConvertible<
+                    std::random_access_iterator_tag,
+                    IteratorCategory,
+                    T
+                >,
+                DetectedValue<
+                    NoNarrowConversionTo,
+                    DetectedType<IteratorValueType, T>,
+                    uint8_t
+                >
+            >::value;
+    }
 
     namespace _private {
         struct OsHandle {
@@ -41,7 +67,8 @@ namespace net {
         ~TcpSocket();
         auto operator=(TcpSocket&&) noexcept -> TcpSocket&;
         auto operator=(TcpSocket const&) -> TcpSocket& = delete;
-        auto bind(ip::IPv4 addr, uint16_t port) noexcept -> SocketResult<void>;
+        auto bind(ip::IPv4 addr, uint16_t port) noexcept 
+            -> SocketResult<void>;
         auto connect(ip::IPv4 addr, uint16_t port) noexcept
             -> SocketResult<void>;
         auto listen() noexcept -> SocketResult<void>;
@@ -50,19 +77,27 @@ namespace net {
         auto accept() noexcept -> SocketResult<TcpSocket>;
 
         template<
-            typename Buffer,
+            typename OutputIterator,
             typename std::enable_if<
-                ContiguousBytes<Buffer>>::type* = nullptr>
-        auto read(Buffer& b) noexcept -> SocketResult<size_t> {
-            return read_(&*b.begin(), b.size());
+                cncpts::ContiguousByteIterator<OutputIterator>>::type* = 
+                    nullptr>
+        auto read(OutputIterator first, OutputIterator last) noexcept 
+            -> SocketResult<size_t> 
+        {
+            return read_(std::addressof(*first), 
+                         std::distance(first, last));
         }
 
         template<
-            typename Buffer,
+            typename InputIterator,
             typename std::enable_if<
-                ContiguousBytes<Buffer>>::type* = nullptr>
-        auto write(Buffer const& b) noexcept -> SocketResult<size_t> {
-            return write_(&*b.begin(), b.size());
+                cncpts::ContiguousByteIterator<InputIterator>>::type* = 
+                    nullptr>
+        auto write(InputIterator first, InputIterator last) noexcept 
+            -> SocketResult<size_t> 
+        {
+            return write_(std::addressof(*first), 
+                          std::distance(first, last));
         }
 
     private:

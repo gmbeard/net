@@ -54,8 +54,6 @@ TEST_CASE("TCP Sockets", "[net]") {
     }
 }
 
-// TODO(GB):
-//  Make this test automated
 TEST_CASE("Connection tests", "[net]") {
 
     SECTION("TcpSocket should accept a socket") {
@@ -121,15 +119,26 @@ TEST_CASE("Connection tests", "[net]") {
     }
 }
 
-// TODO(GB):
-//  Make this test automated
 TEST_CASE("Socket IO", "[net]") {
 
     SECTION("Should obey ContiguousBytes") {
         using Valid = std::vector<uint8_t>;
         using Invalid = std::vector<int32_t>;
+        using List = std::forward_list<uint8_t>;
 
-        REQUIRE(net::ContiguousBytes<Valid>);
-        REQUIRE(!net::ContiguousBytes<Invalid>);
+        using ValidIterator = 
+            decltype(std::declval<Valid>().begin());
+        using InvalidIterator =
+            decltype(std::declval<Invalid>().begin());
+        using ListIterator = 
+            decltype(std::declval<List>().begin());
+
+        REQUIRE(net::cncpts::ContiguousByteIterator<ValidIterator>);
+        REQUIRE(!net::cncpts::ContiguousByteIterator<InvalidIterator>);
+        REQUIRE(!net::cncpts::ContiguousByteIterator<ListIterator>);
+
+        auto s = net::TcpSocket { };
+        auto valid = Valid { };
+        using ReadResult = decltype(s.read(valid.begin(), valid.end()));
     }
 }

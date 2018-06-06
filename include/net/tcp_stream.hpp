@@ -9,16 +9,18 @@ namespace net {
     struct TcpStream {
         TcpStream(TcpSocket&&) noexcept;
 
-        template<typename Buffer>
-        auto read(Buffer& b) noexcept -> SocketResult<size_t> {
-            return socket_.read(b);
+        template<typename OutputIterator>
+        auto read(OutputIterator first, OutputIterator last) noexcept 
+            -> SocketResult<size_t> 
+        {
+            return socket_.read(first, last);
         }
         
-        template<typename Buffer>
-        auto write(Buffer const& b) noexcept
+        template<typename InputIterator>
+        auto write(InputIterator first, InputIterator last) noexcept
             -> SocketResult<size_t>
         {
-            return socket_.write(b);
+            return socket_.write(first, last);
         }
 
     private:
