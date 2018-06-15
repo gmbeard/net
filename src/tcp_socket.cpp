@@ -91,13 +91,13 @@ auto TcpSocket::accept() noexcept -> SocketResult<TcpSocket> {
     return result::ok(_private::OsHandle { incoming.value() });
 }
 
-auto TcpSocket::read_(uint8_t* buffer, size_t len) noexcept
+auto TcpSocket::read_(char* buffer, size_t len) noexcept
     -> SocketResult<size_t>
 {
     return sys::read_socket(handle_, buffer, len);
 }
 
-auto TcpSocket::write_(uint8_t const* buffer, size_t len) noexcept
+auto TcpSocket::write_(char const* buffer, size_t len) noexcept
             -> SocketResult<size_t>
 {
     return sys::write_socket(handle_, buffer, len);

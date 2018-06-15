@@ -158,13 +158,13 @@ auto net::sys::accept_socket(SocketHandle h) noexcept
 }
 
 auto net::sys::read_socket(SocketHandle h, 
-                           uint8_t* buffer, 
+                           char* buffer, 
                            size_t len) noexcept
     -> SocketResult<size_t>
 {    
     DWORD bytes_read = 0;
     WSABUF b[] = { 
-        { len, reinterpret_cast<CHAR*>(const_cast<uint8_t*>(buffer)) }
+        { len, buffer }
     };
 
     auto e = ::WSASend(h,
@@ -180,13 +180,13 @@ auto net::sys::read_socket(SocketHandle h,
 }
 
 auto net::sys::write_socket(SocketHandle h, 
-                            uint8_t const* buffer, 
+                            char const* buffer, 
                             size_t len) noexcept
             -> SocketResult<size_t>
 {    
     DWORD bytes_written = 0;
     WSABUF b[] = { 
-        { len, reinterpret_cast<CHAR*>(const_cast<uint8_t*>(buffer)) }
+        { len, const_cast<char*>(buffer) }
     };
 
     auto e =  ::WSASend(h,

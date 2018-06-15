@@ -37,10 +37,10 @@ namespace net {
                     IteratorCategory,
                     T
                 >,
-                DetectedValue<
-                    NoNarrowConversionTo,
-                    DetectedType<IteratorValueType, T>,
-                    uint8_t
+                DetectedExact<
+                    char,
+                    IteratorValueType,
+                    T
                 >
             >::value;
     }
@@ -101,8 +101,8 @@ namespace net {
         }
 
     private:
-        auto read_(uint8_t*, size_t) noexcept -> SocketResult<size_t>;
-        auto write_(uint8_t const*, size_t) noexcept -> SocketResult<size_t>;
+        auto read_(char*, size_t) noexcept -> SocketResult<size_t>;
+        auto write_(char const*, size_t) noexcept -> SocketResult<size_t>;
 
         sys::SocketHandle handle_;
     };

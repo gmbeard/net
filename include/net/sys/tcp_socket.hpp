@@ -42,9 +42,9 @@ auto listen_on_socket(SocketHandle) noexcept -> SocketResult<void>;
 auto set_nonblocking(SocketHandle, bool) noexcept -> SocketResult<void>;
 auto set_reuseaddr(SocketHandle, bool) noexcept -> SocketResult<void>;
 auto accept_socket(SocketHandle) noexcept -> SocketResult<SocketHandle>;
-auto read_socket(SocketHandle, uint8_t*, size_t) noexcept
+auto read_socket(SocketHandle, char*, size_t) noexcept
     -> SocketResult<size_t>;
-auto write_socket(SocketHandle, uint8_t const*, size_t) noexcept
+auto write_socket(SocketHandle, char const*, size_t) noexcept
             -> SocketResult<size_t>;
 }}
 #endif //NET_SYS_TCP_SOCKET_HPP_INCLUDED

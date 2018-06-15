@@ -122,7 +122,7 @@ TEST_CASE("Connection tests", "[net]") {
 TEST_CASE("Socket IO", "[net]") {
 
     SECTION("Should obey ContiguousBytes") {
-        using Valid = std::vector<uint8_t>;
+        using Valid = std::vector<char>;
         using Invalid = std::vector<int32_t>;
         using List = std::forward_list<uint8_t>;
 
@@ -139,6 +139,6 @@ TEST_CASE("Socket IO", "[net]") {
 
         auto s = net::TcpSocket { };
         auto valid = Valid { };
-        using ReadResult = decltype(s.read(valid.begin(), valid.end()));
+        using ReadResult = decltype(s.write(valid.begin(), valid.end()));
     }
 }
