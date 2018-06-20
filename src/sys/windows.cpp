@@ -163,6 +163,8 @@ auto net::sys::read_socket(SocketHandle h,
     -> SocketResult<size_t>
 {    
     DWORD bytes_read = 0;
+    DWORD flags = 0;
+
     WSABUF b[] = { 
         { len, buffer }
     };
@@ -171,10 +173,13 @@ auto net::sys::read_socket(SocketHandle h,
                        &b[0],
                        1,
                        &bytes_read,
-                       0,
+                       &flags,
                        nullptr,
                        nullptr);
     CHECK_SOCKET_RESULT(e);
+
+    // Unused...
+    static_cast<void>(flags);
 
     return result::ok(static_cast<size_t>(bytes_read));
 }
