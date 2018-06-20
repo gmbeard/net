@@ -167,7 +167,7 @@ auto net::sys::read_socket(SocketHandle h,
         { len, buffer }
     };
 
-    auto e = ::WSASend(h,
+    auto e = ::WSARecv(h,
                        &b[0],
                        1,
                        &bytes_read,
