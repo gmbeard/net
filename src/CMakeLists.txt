@@ -34,6 +34,12 @@ target_link_libraries(
         Net::includes
 )
 
+target_compile_definitions(
+    net
+    PUBLIC
+        $<$<CXX_COMPILER_ID:MSVC>:NO_STRICT NOMINMAX>
+)
+
 if(WIN32)
     target_link_libraries(
         net
