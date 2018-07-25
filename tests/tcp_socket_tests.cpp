@@ -1,5 +1,5 @@
 #include "net/tcp_socket.hpp"
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 #include <string>
 #include <vector>
 #include <forward_list>

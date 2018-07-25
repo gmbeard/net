@@ -10,7 +10,7 @@ target_link_libraries(
     tests
     PRIVATE
         Net::net
-        Catch2::Catch
+        Catch2::Catch2
 )
 
 add_test(

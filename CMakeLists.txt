@@ -5,37 +5,25 @@ list(APPEND
     ${CMAKE_CURRENT_LIST_DIR}/cmake
 )
 
-list(APPEND
-    CMAKE_MODULE_PATH
-    ${CMAKE_CURRENT_LIST_DIR}/cmake-modules
-)
-
-list(APPEND
-    CMAKE_PREFIX_PATH
-    ${CMAKE_CURRENT_LIST_DIR}/deps
-)
-
-include(FindPackageDelegate)
-include(InstallExternals)
-
 project(Net CXX)
 
-#set(LOCAL_TARGETS
-#    Ip
-#    Result
-#)
+option(SKIP_SUPERBUILD
+    "SuperBuild for ${PROJECT_NAME}"
+    OFF
+)
 
-#add_subdirectory(submodules/ip)
-#add_subdirectory(submodules/result)
+option(NET_ENABLE_TESTING
+    "Enable unit tests for ${PROJECT_NAME}"
+    OFF
+)
+
+if(NOT SKIP_SUPERBUILD)
+    include(SuperBuild)
+    return()
+endif()
+
 add_subdirectory(include)
 add_subdirectory(src)
-
-set(NET_ENABLE_TESTING
-    OFF
-    CACHE
-    BOOL
-    "Enable unit tests for ${PROJECT_NAME}"
-)
 
 if(NET_ENABLE_TESTING)
     enable_testing()
