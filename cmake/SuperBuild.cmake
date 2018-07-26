@@ -25,8 +25,8 @@ if(NOT Result_FOUND)
         BUILD_ALWAYS ON
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
+            -DSKIP_SUPERBUILD=OFF
             -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-            -DINSTALL_DEPS_TO=<INSTALL_DIR>
     )
 else()
     add_custom_target(ResultProject)
